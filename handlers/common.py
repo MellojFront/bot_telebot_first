@@ -1,20 +1,46 @@
-import json
+import os
 
 from telebot import TeleBot
-from telebot.types import Message
+from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
 
 
 def reg_common_handlers(bot: TeleBot):
 
     @bot.message_handler(commands=['start'])
-    def main(message):
-        message_dict = message.json
-        debug_text = json.dumps(message_dict, indent=2, ensure_ascii=False)
+    def send_welcome(message: Message):
+        markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
-        safe_text = f"<pre>{debug_text[:4000]}</pre>"
-        
-        bot.send_message(message.chat.id, safe_text, parse_mode='HTML')
+        btn_price = KeyboardButton("✂️ Прайс-лист")
+        btn_contacts = KeyboardButton("📍 Контакты")
+
+        markup.add(btn_price, btn_contacts)
+
+        user_name = message.from_user.first_name if message.from_user else 'Друг'
+
+        welcom_text = (f"Привет, {user_name}! 👋\n\n"
+            "Добро пожаловать в мужскую парикмахерскую **'LeadCut'**! 💈\n"
+            "Мы делаем классические и современные стрижки, оформляем бороды и бреем опасной бритвой.\n\n"
+            "Выберите интересующий вас раздел в меню ниже 👇")
+
+        photo_path = "./media/boroda.png"
+
+        if os.path.exists(photo_path):
+            with open(photo_path, 'rb') as photo:
+                bot.send_photo(
+                    message.chat.id,
+                    photo,
+                    caption=welcom_text,
+                    reply_markup=markup,
+                    parse_mode="Markdown"
+                )
+        else:
+            bot.send_message(
+                message.chat.id,
+                welcom_text + "\n\n*(Картинка не найдена)*",
+                reply_markup=markup,
+                parse_mode="Markdown"
+            )
 
 
     @bot.message_handler(commands=['help'])
@@ -28,9 +54,3 @@ def reg_common_handlers(bot: TeleBot):
 
 
 
-    @bot.message_handler()
-    def info(message):
-        if message.text.lower() == 'привет':
-            bot.send_message(message.chat.id, f'Привет {message.from_user.first_name}!')
-        elif message.text.lower() == 'id':
-            bot.reply_to(message, f'ID: {message.from_user.id}')
