@@ -1,7 +1,7 @@
 import os
 
 from telebot import TeleBot
-from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 
 
 
@@ -9,12 +9,11 @@ def reg_common_handlers(bot: TeleBot):
 
     @bot.message_handler(commands=['start'])
     def send_welcome(message: Message):
-        markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-
-        btn_price = KeyboardButton("✂️ Прайс-лист")
-        btn_contacts = KeyboardButton("📍 Контакты")
-
-        markup.add(btn_price, btn_contacts)
+        markup = InlineKeyboardMarkup()
+        btn_price = InlineKeyboardButton("✂️ Прайс-лист",callback_data='price')
+        btn_contacts = InlineKeyboardButton("📍 Контакты",callback_data='contacts')
+        markup.row(btn_price)
+        markup.row(btn_contacts)
 
         user_name = message.from_user.first_name if message.from_user else 'Друг'
 
@@ -46,10 +45,7 @@ def reg_common_handlers(bot: TeleBot):
     @bot.message_handler(commands=['help'])
     def help(message):
         bot.send_message(message.chat.id, '<b>Help info</b>', parse_mode='HTML')
-
         bot.send_message(message.chat.id, 'Нажми на команды, чтобы скопировать или выполнить')
-
-
         bot.send_message(message.chat.id, '`привет` - для вывода приветствия\n`id` - чтобы получить свой id\n/start - для вывода информации пользователя\n/help - помощь', parse_mode='Markdown')
 
 
